@@ -91,6 +91,10 @@ python manage.py runserver
 :heavy_check_mark:(на очереди)  сделать систему лайков.
  
 :white_check_mark:(сделанно)  Сделать описание проекта.
+ 
+:heavy_check_mark:(на очереди)  Пройти тесты по кешу(ошибка из за новой вьюхе).
 
+ 
+ 
 ### **Автор**
 [Дима Плужников](https://github.com/Banes31)
