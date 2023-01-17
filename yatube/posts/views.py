@@ -2,56 +2,106 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.cache import cache_page
+from django.views.generic import ListView, DetailView, CreateView
+from django.views.generic.detail import SingleObjectMixin
 
 from .forms import CommentForm, PostForm
 from .models import Follow, Group, Post, User
 from .utls import _add_paginator_page
 
 
-@cache_page(settings.CACHE_TIME, key_prefix='index_page')
-def index(request):
-    """ the main page of the yatube website"""
-    posts = (
-        Post.objects
-        .select_related('group').all()
-    )
-    page_obj = _add_paginator_page(request, posts)
-    context = {
-        'page_obj': page_obj,
-    }
-    return render(request, 'posts/index.html', context)
+# @cache_page(settings.CACHE_TIME, key_prefix='index_page')
+class IndexHome(ListView):
+    model = Post
+    template_name = 'posts/index.html'
+    paginate_by = settings.COUNT_POST_PAGE
 
 
-def group_posts(request, slug):
-    """the page of the group of posts"""
-    group = get_object_or_404(Group, slug=slug)
-    posts = group.groups.all()
-    page_obj = _add_paginator_page(request, posts)
-    context = {
-        'group': group,
-        'page_obj': page_obj,
-    }
-    return render(request, 'posts/group_list.html', context)
+# @cache_page(settings.CACHE_TIME, key_prefix='index_page')
+# def index(request):
+#     """ the main page of the yatube website"""
+#     posts = (
+#         Post.objects
+#         .select_related('group').all()
+#     )
+#     page_obj = _add_paginator_page(request, posts)
+#     context = {
+#         'page_obj': page_obj,
+#     }
+#     return render(request, 'posts/index.html', context)
+
+class GroupPosts(ListView):
+    model = Post
+    template_name = 'posts/group_list.html'
+    paginate_by = settings.COUNT_POST_PAGE
+
+    # def get_context_data(self, *, object_list=None, **kwargs):
+    #     context = super().get_context_data(**kwargs)
+    #     context['title'] = 'Главная страница'
+    #     return context
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['group'] = Group.objects.filter(slug=self.kwargs['slug'])[0]
+        return context
+
+    def get_queryset(self):
+        return Post.objects.filter(group__slug=self.kwargs['slug'])
 
 
-def profile(request, username):
-    """"the user's page and his posts"""
-    author = get_object_or_404(User, username=username)
-    post_author = author.post.all()
-    page_obj = _add_paginator_page(request, post_author)
-    following = (
-        request.user.is_authenticated
-        and Follow.objects.filter(
-            user=request.user, author=author
-        ).exists()
-    )
-    context = {
-        'author': author,
-        'post_author': post_author,
-        'page_obj': page_obj,
-        'following': following,
-    }
-    return render(request, 'posts/profile.html', context)
+# def group_posts(request, slug):
+#     """the page of the group of posts"""
+#     group = get_object_or_404(Group, slug=slug)
+#     posts = group.groups.all()
+#     page_obj = _add_paginator_page(request, posts)
+#     context = {
+#         'group': group,
+#         'page_obj': page_obj,
+#     }
+#     return render(request, 'posts/group_list.html', context)
+
+
+class Profile(ListView):
+    # queryset = Post.objects.filter(author__username=kwargs['username'])
+    model = Post
+    template_name = 'posts/profile.html'
+    paginate_by = settings.COUNT_POST_PAGE
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['author'] = get_object_or_404(User, username=self.kwargs['username'])
+        context['following'] = (
+                self.request.user.is_authenticated
+                and Follow.objects.filter(
+                         user=self.request.user,
+                         author=context['author']).exists()
+        )
+        context['post_author'] = context['author'].post.all()
+        return context
+
+    def get_queryset(self):
+        return Post.objects.filter(author__username=self.kwargs['username'])
+
+
+
+# def profile(request, username):
+#     """"the user's page and his posts"""
+#     author = get_object_or_404(User, username=username)
+#     post_author = author.post.all()
+#     page_obj = _add_paginator_page(request, post_author)
+#     following = (
+#             request.user.is_authenticated
+#             and Follow.objects.filter(
+#         user=request.user, author=author
+#     ).exists()
+#     )
+#     context = {
+#         'author': author,
+#         'post_author': post_author,
+#         'page_obj': page_obj,
+#         'following': following,
+#     }
+#     return render(request, 'posts/profile.html', context)
 
 
 def post_detail(request, post_id):
