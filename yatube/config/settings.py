@@ -14,7 +14,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 
-ALLOWED_HOSTS = ['84.201.167.210', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['pushkinlive.hopto.org', '127.0.0.1', 'localhost']
 DEBUG = False
 
 INSTALLED_APPS = [
