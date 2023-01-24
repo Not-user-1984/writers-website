@@ -12,6 +12,7 @@ from .utls import _add_paginator_page
 
 # @cache_page(settings.CACHE_TIME, key_prefix='index_page')
 class IndexHome(ListView):
+    """Домашния страница"""
     model = Post
     template_name = 'posts/index.html'
     paginate_by = settings.COUNT_POST_PAGE
@@ -31,6 +32,7 @@ class IndexHome(ListView):
 #     return render(request, 'posts/index.html', context)
 
 class GroupPosts(ListView):
+    """Страница для групп"""
     model = Post
     template_name = 'posts/group_list.html'
     paginate_by = settings.COUNT_POST_PAGE
@@ -62,6 +64,7 @@ class GroupPosts(ListView):
 
 
 class Profile(ListView):
+    """страница профиля"""
     # queryset = Post.objects.filter(author__username=kwargs['username'])
     model = Post
     template_name = 'posts/profile.html'
@@ -69,12 +72,14 @@ class Profile(ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['author'] = get_object_or_404(User, username=self.kwargs['username'])
+        context['author'] = get_object_or_404(
+            User, username=self.kwargs['username']
+            )
         context['following'] = (
                 self.request.user.is_authenticated
                 and Follow.objects.filter(
-                         user=self.request.user,
-                         author=context['author']).exists()
+                        user=self.request.user,
+                        author=context['author']).exists()
         )
         context['post_author'] = context['author'].post.all()
         return context
@@ -105,6 +110,7 @@ class Profile(ListView):
 
 
 def post_detail(request, post_id):
+    """страница отдельного поста"""
     post_detail_id = get_object_or_404(Post, pk=post_id)
     comments = post_detail_id.comments.all()
     form = CommentForm(request.POST or None)
@@ -124,6 +130,7 @@ def post_detail(request, post_id):
 
 @login_required
 def post_create(request):
+    """форма для создания поста"""
     form = PostForm(
         request.POST or None,
         files=request.FILES or None,
@@ -145,6 +152,7 @@ def post_create(request):
 
 @login_required
 def post_edit(request, post_id):
+    """форма для редактирование поста"""
     is_edit = get_object_or_404(Post, id=post_id, author=request.user)
     form = PostForm(
         request.POST or None,
@@ -167,6 +175,7 @@ def post_edit(request, post_id):
 
 @login_required
 def add_comment(request, post_id):
+    """форма для создания комментария"""
     post = get_object_or_404(Post, pk=post_id)
     form = CommentForm(request.POST or None)
     if form.is_valid():
@@ -179,6 +188,7 @@ def add_comment(request, post_id):
 
 @login_required
 def follow_index(request):
+    """делает подписку на автора """
     post_list = Post.objects.filter(author__following__user=request.user)
     page_obj = _add_paginator_page(request, post_list)
     return render(
@@ -190,6 +200,7 @@ def follow_index(request):
 
 @login_required
 def profile_follow(request, username):
+    """Показывает посты подписок"""
     author = get_object_or_404(User, username=username)
     if request.user != author:
         Follow.objects.get_or_create(user=request.user, author=author)
@@ -201,6 +212,7 @@ def profile_follow(request, username):
 
 @login_required
 def profile_unfollow(request, username):
+    """отписка от автора"""
     author = get_object_or_404(User, username=username)
     if request.user != author:
         Follow.objects.filter(user=request.user, author=author).delete()

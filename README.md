@@ -97,4 +97,4 @@ python manage.py runserver
  
  
 ### **Автор**
-[Дима Плужников](https://github.com/Banes31)
+[Дима Плужников](https://github.com/Not-user-1984)
