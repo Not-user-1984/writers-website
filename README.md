@@ -1,6 +1,6 @@
 
+# **проект 'For writers'(Yatube)** 
 
-# **Моя версия учебного проекта яндекса Yatube** 
 #### **Стек**
 ![python version](https://img.shields.io/badge/Python-3.10-green)
 ![django version](https://img.shields.io/badge/Django-4.1-green)
@@ -9,7 +9,7 @@
 ![requests version](https://img.shields.io/badge/requests-2.26-green)
 ![sorl-thumbnail version](https://img.shields.io/badge/thumbnail-12.7-green)
 ### **Описание**
-Социальная сеть блогеров. **Учебный проект**.
+Социальная сеть блогеров. 
 Сообщество для публикаций. Блог с возможностью публикации постов, подпиской на группы и авторов, а также комментированием постов.
 [Сам сайт &#128520;](https://pushkinlive.hopto.org)
 <details>
@@ -96,5 +96,5 @@ python manage.py runserver
 
  
  
-### **Автор**
+### **разработчик**
 [Дима Плужников](https://github.com/Not-user-1984)
