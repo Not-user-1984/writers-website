@@ -2,30 +2,68 @@
 {% block title %}Об авторе проекта{% endblock %}
 {% block content %}
 {% load static %}
-<h1>Привет, я автор</h1>
-<p>
-  Тут я размещу информацию о себе, используя свои умения верстать.
-  Картинки, блоки, элементы бустрап. А может быть, просто напишу несколько абзацев текста. 
-</p>
-<div class="container py-5" id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel">
-  <div class="carousel-inner">
-    <div class="carousel-item active">
-      <img src="{% static 'img/about/Gravelbike_Scott.png' %}" class="d-block w-100" alt="...">
-    </div>
-    <div class="carousel-item">
-      <img src="..." class="d-block w-100" alt="...">
-    </div>
-    <div class="carousel-item">
-      <img src="..." class="d-block w-100" alt="...">
+
+<body>
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <h2>Привет, я Дима &#129302;</h2>
+      </div>
     </div>
   </div>
-  <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="prev">
-    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-    <span class="visually-hidden">Previous</span>
-  </button>
-  <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="next">
-    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-    <span class="visually-hidden">Next</span>
-  </button>
-</div>
+  <div class="container">
+    <div class="row">
+      <div class="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+        <p>Разработчик  на Python, Go из хобби люблю вело туризм , катаю между городами ,читаю книги</p>
+        <p>Этот сайт, учебный проект Яндекс Практикум, но планах уже самостоятельно прикрутить к нему всякие плюшки и вкусности :) </p>
+        <div class="row">
+          <p>
+          <div class="col"><img src="{% static 'img/about/1.png' %}" ></div>
+          </p>
+        </div>
+      </div>
+      
+      <div class="col-12 col-sm-12 col-md- col-lg-6 col-xl-6">
+        <div class="img_row">
+        <img src="{% static 'img/about/add.png' %}" >
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <h2>Мои проекты на git</h2>
+      </div>
+    </div>
+  </div>
+  <div class="container">
+    <div class="row">
+      <div class="col-12 col-sm-12 col-md-6 col-lg-3 col-xl-3">
+        <p><a href="https://github.com/Not-user-1984/api_final_yatube">Api_Yatube</a></p>
+        <p><a href="https://github.com/Shkitskiy94/Joystick161">Интернет магазин JoYstik</a></p>
+        <p><a href="https://github.com/Not-user-1984/hw_python_oop">Модуль фитнес-трекера</a></p>
+        <p><a href="http://thecode.local/content-manager/">api_yamdb</a></p>
+      </div>
+      <div class="col-12 col-sm-12 col-md-6 col-lg-3 col-xl-3">
+
+      </div>
+    </div>
+  </div>
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <h2>Контакты для связи</h2>
+      </div>
+    </div>
+  </div>
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <p>Телеграм: @DmitryPluzhnikov</p>
+      </div>
+    </div>
+  </div>
+</body>
+<!-- конец всей страницы -->
 {% endblock %} 
