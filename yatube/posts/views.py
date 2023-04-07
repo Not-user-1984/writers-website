@@ -1,46 +1,33 @@
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
-from django.views.generic import ListView, DetailView, CreateView
-from django.views.generic.detail import SingleObjectMixin
+from django.views.generic import DetailView, ListView
 
 from .forms import CommentForm, PostForm
 from .models import Follow, Group, Post, User
 from .utls import _add_paginator_page
 
 
-# @cache_page(settings.CACHE_TIME, key_prefix='index_page')
 class IndexHome(ListView):
     """Домашния страница"""
     model = Post
     template_name = 'posts/index.html'
     paginate_by = settings.COUNT_POST_PAGE
 
+    @method_decorator(cache_page(settings.CACHE_TIME, key_prefix='index_page'))
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
-# @cache_page(settings.CACHE_TIME, key_prefix='index_page')
-# def index(request):
-#     """ the main page of the yatube website"""
-#     posts = (
-#         Post.objects
-#         .select_related('group').all()
-#     )
-#     page_obj = _add_paginator_page(request, posts)
-#     context = {
-#         'page_obj': page_obj,
-#     }
-#     return render(request, 'posts/index.html', context)
+
 
 class GroupPosts(ListView):
     """Страница для групп"""
     model = Post
     template_name = 'posts/group_list.html'
     paginate_by = settings.COUNT_POST_PAGE
-
-    # def get_context_data(self, *, object_list=None, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     context['title'] = 'Главная страница'
-    #     return context
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -51,81 +38,87 @@ class GroupPosts(ListView):
         return Post.objects.filter(group__slug=self.kwargs['slug'])
 
 
-# def group_posts(request, slug):
-#     """the page of the group of posts"""
-#     group = get_object_or_404(Group, slug=slug)
-#     posts = group.groups.all()
-#     page_obj = _add_paginator_page(request, posts)
-#     context = {
-#         'group': group,
-#         'page_obj': page_obj,
-#     }
-#     return render(request, 'posts/group_list.html', context)
+class Profile(LoginRequiredMixin, ListView):
+    """
+    View-класс для отображения страницы профиля пользователя.
+    """
 
-
-class Profile(ListView):
-    """страница профиля"""
-    # queryset = Post.objects.filter(author__username=kwargs['username'])
     model = Post
     template_name = 'posts/profile.html'
     paginate_by = settings.COUNT_POST_PAGE
 
-    def get_context_data(self, *, object_list=None, **kwargs):
+    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['author'] = get_object_or_404(
-            User, username=self.kwargs['username']
-            )
-        context['following'] = (
-                self.request.user.is_authenticated
-                and Follow.objects.filter(
-                        user=self.request.user,
-                        author=context['author']).exists()
-        )
-        context['post_author'] = context['author'].post.all()
+        author = get_object_or_404(User, username=self.kwargs['username'])
+        following = (
+            self.request.user.is_authenticated and Follow.objects.filter(
+                    user=self.request.user,
+                    author=author).exists()
+                )
+        context.update({
+            'author': author,
+            'following': following,
+            'post_author': author.post.all(),
+        })
         return context
 
     def get_queryset(self):
-        return Post.objects.filter(author__username=self.kwargs['username'])
+        """
+        Возвращает список постов, связанных с автором,
+        чей профиль отображается на странице.
+        """
+        author = get_object_or_404(User, username=self.kwargs['username'])
+        return author.post.all()
 
 
+class PostDetailView(DetailView, LoginRequiredMixin):
+    """
+    View-класс для отображения страницы с детальной информацией о посте.
+    модель Django, используемая для получения данных поста.
+    """
+    model = Post
+    template_name = 'posts/post_detail.html'
+    context_object_name = 'post'
+    pk_url_kwarg = 'post_id'
 
-# def profile(request, username):
-#     """"the user's page and his posts"""
-#     author = get_object_or_404(User, username=username)
-#     post_author = author.post.all()
-#     page_obj = _add_paginator_page(request, post_author)
-#     following = (
-#             request.user.is_authenticated
-#             and Follow.objects.filter(
-#         user=request.user, author=author
-#     ).exists()
-#     )
-#     context = {
-#         'author': author,
-#         'post_author': post_author,
-#         'page_obj': page_obj,
-#         'following': following,
-#     }
-#     return render(request, 'posts/profile.html', context)
+    def get_context_data(self, **kwargs):
+        """
+        возвращает словарь контекста для шаблона страницы поста,
+        который содержит информацию о количестве постов автора,
+        комментарии к посту и форму для добавления нового комментария.
+        """
 
+        context = super().get_context_data(**kwargs)
+        post_author_id = self.object.author.post.count()
+        comments = self.object.comments.all()
+        form = CommentForm()
+        context.update({
+            'count_post_author': post_author_id,
+            'form': form,
+            'comments': comments,
+        })
+        return context
 
-def post_detail(request, post_id):
-    """страница отдельного поста"""
-    post_detail_id = get_object_or_404(Post, pk=post_id)
-    comments = post_detail_id.comments.all()
-    form = CommentForm(request.POST or None)
-    post_author_id = post_detail_id.author.post.count()
-    context = {
-        'post': post_detail_id,
-        'count_post_author': post_author_id,
-        'form': form,
-        'comments': comments,
-    }
-    return render(
-        request,
-        'posts/post_detail.html',
-        context
-    )
+    def post(self, request, *args, **kwargs):
+        """
+        обрабатывает POST-запрос на добавление нового комментария к посту.
+        Если данные формы валидны, то создает новый объект Comment,
+        связанный с текущим постом и авторизованным пользователем,
+        сохраняет его в базе данных и перенаправляет пользователя на стран
+        ицу с детальной информацией о посте.
+        Если данные формы невалидны,
+        то возвращает страницу с детальной информацией о постес указанием ошибок в форме
+        """
+        self.object = self.get_object()
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.post = self.object
+            comment.author = request.user
+            comment.save()
+            return redirect('posts:post_detail', post_id=self.kwargs['pk'])
+        return self.render_to_response(self.get_context_data(form=form))
+
 
 
 @login_required
